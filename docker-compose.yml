@@ -1,0 +1,164 @@
+services:
+  # SQL Server
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fcg-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - fcg-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1' -C || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fcg-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - fcg-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Users API
+  users-api:
+    build:
+      context: .
+      dockerfile: FCG.Api.Users/Dockerfile
+      args:
+        GITHUB_USERNAME: ${GITHUB_USERNAME}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: fcg-users-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=FCG_Users;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Authentication__JwtBearer__Authority=${JWT_AUTHORITY}
+      - AWS__Region=${AWS_REGION}
+      - AWS__AccessKeyId=${AWS_ACCESS_KEY_ID}
+      - AWS__SecretAccessKey=${AWS_SECRET_ACCESS_KEY}
+      - AWS__SessionToken=${AWS_SESSION_TOKEN}
+      - AWS__Cognito__UserPoolId=${COGNITO_USER_POOL_ID}
+      - AWS__Cognito__ClientId=${COGNITO_CLIENT_ID}
+      - AWS__Cognito__ClientSecret=${COGNITO_CLIENT_SECRET}
+      - Admin__Email=${ADMIN_EMAIL}
+      - Admin__Password=${ADMIN_PASSWORD}
+      - Messaging__RabbitMQ__Host=rabbitmq
+      - Messaging__RabbitMQ__Username=guest
+      - Messaging__RabbitMQ__Password=guest
+    ports:
+      - "5001:80"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fcg-network
+
+  # Catalog API
+  catalog-api:
+    build:
+      context: .
+      dockerfile: FCG.Api.Catalog/Dockerfile
+      args:
+        GITHUB_USERNAME: ${GITHUB_USERNAME}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: fcg-catalog-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=FCG_Catalog;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Authentication__JwtBearer__Authority=${JWT_AUTHORITY}
+      - ExternalServices__UserApi__BaseUrl=http://users-api:80
+      - ExternalServices__UserApi__TimeoutSeconds=30
+      - Messaging__RabbitMQ__Host=rabbitmq
+      - Messaging__RabbitMQ__Username=guest
+      - Messaging__RabbitMQ__Password=guest
+    ports:
+      - "5002:80"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      users-api:
+        condition: service_started
+    networks:
+      - fcg-network
+
+  # Payments API
+  payments-api:
+    build:
+      context: .
+      dockerfile: FCG.Api.Payments/Dockerfile
+      args:
+        GITHUB_USERNAME: ${GITHUB_USERNAME}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: fcg-payments-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - Messaging__RabbitMQ__Host=rabbitmq
+      - Messaging__RabbitMQ__Username=guest
+      - Messaging__RabbitMQ__Password=guest
+    ports:
+      - "5003:80"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fcg-network
+
+  # Notifications API
+  notifications-api:
+    build:
+      context: .
+      dockerfile: FCG.Api.Notifications/Dockerfile
+      args:
+        GITHUB_USERNAME: ${GITHUB_USERNAME}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: fcg-notifications-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - Messaging__RabbitMQ__Host=rabbitmq
+      - Messaging__RabbitMQ__Username=guest
+      - Messaging__RabbitMQ__Password=guest
+    ports:
+      - "5004:80"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fcg-network
+    restart: unless-stopped
+
+networks:
+  fcg-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
