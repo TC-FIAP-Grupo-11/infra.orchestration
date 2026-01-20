@@ -45,11 +45,8 @@ services:
   users-api:
     image: fcg-users-api:latest
     build:
-      context: ../..
-      dockerfile: FCG.Api.Users/Dockerfile
-      args:
-        GITHUB_USERNAME: ${GITHUB_USERNAME}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+      context: ../../api.users
+      dockerfile: Dockerfile
     container_name: fcg-users-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -82,11 +79,8 @@ services:
   catalog-api:
     image: fcg-catalog-api:latest
     build:
-      context: ../..
-      dockerfile: FCG.Api.Catalog/Dockerfile
-      args:
-        GITHUB_USERNAME: ${GITHUB_USERNAME}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+      context: ../../api.catalog
+      dockerfile: Dockerfile
     container_name: fcg-catalog-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -114,11 +108,8 @@ services:
   payments-api:
     image: fcg-payments-api:latest
     build:
-      context: ../..
-      dockerfile: FCG.Api.Payments/Dockerfile
-      args:
-        GITHUB_USERNAME: ${GITHUB_USERNAME}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+      context: ../../api.payments
+      dockerfile: Dockerfile
     container_name: fcg-payments-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -138,11 +129,8 @@ services:
   notifications-api:
     image: fcg-notifications-api:latest
     build:
-      context: ../..
-      dockerfile: FCG.Api.Notifications/Dockerfile
-      args:
-        GITHUB_USERNAME: ${GITHUB_USERNAME}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+      context: ../../api.notifications
+      dockerfile: Dockerfile
     container_name: fcg-notifications-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production

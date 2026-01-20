@@ -4,25 +4,46 @@ Orquestração para executar a plataforma FIAP Cloud Games.
 
 ---
 
-## 🐳 Docker Compose (Recomendado)
+## 📋 Pré-requisitos
+
+Clone todos os repositórios no mesmo nível:
+
+```bash
+mkdir fcg && cd fcg
+
+# Clone os repositórios
+git clone https://github.com/TC-FIAP-Grupo-11/api.users.git
+git clone https://github.com/TC-FIAP-Grupo-11/api.catalog.git
+git clone https://github.com/TC-FIAP-Grupo-11/api.payments.git
+git clone https://github.com/TC-FIAP-Grupo-11/api.notifications.git
+git clone https://github.com/TC-FIAP-Grupo-11/infra.orchestration.git
+```
+
+**Estrutura esperada:**
+```
+fcg/
+├── api.users/
+├── api.catalog/
+├── api.payments/
+├── api.notifications/
+└── infra.orchestration/
+```
+
+---
+
+## 🐳 Docker Compose
 
 ### Configuração
 
-**1. Cire um arquivo .env a partir do exemplo:**
+**1. Crie um arquivo .env a partir do exemplo:**
 ```bash
-cd docker
+cd infra.orchestration/docker
 cp .env.example .env
 ```
 
 **2. Configure as variáveis obrigatórias:**
 
-Edite o arquivo `.env` com suas credenciais AWS Cognito e GitHub Token.
-
-**Como criar GitHub Token:**
-1. Acesse: https://github.com/settings/tokens
-2. Clique em **"Generate new token (classic)"**
-3. Marque a permissão: **`read:packages`**
-4. Copie o token gerado e cole no `.env` em `GITHUB_TOKEN`
+Edite o arquivo `.env` com suas credenciais AWS Cognito.
 
 **3. Execute:**
 ```bash
@@ -51,24 +72,26 @@ kubectl cluster-info
 
 **2. Build das imagens**
 ```bash
-cd ../..
-docker compose -f FCG.Infra.Orchestration/docker/docker-compose.yml build
+cd fcg
+docker compose -f infra.orchestration/docker/docker-compose.yml build
 ```
 
 **3. Criar secrets e editar com suas credenciais**
 ```bash
-cp FCG.Api.Users/k8s/secret.yaml.example FCG.Api.Users/k8s/secret.yaml
-cp FCG.Api.Catalog/k8s/secret.yaml.example FCG.Api.Catalog/k8s/secret.yaml
+cp api.users/k8s/secret.yaml.example api.users/k8s/secret.yaml
+cp api.catalog/k8s/secret.yaml.example api.catalog/k8s/secret.yaml
+# Edite os arquivos com suas credenciais
 ```
 
 **4. Deploy**
 ```bash
-cd FCG.Infra.Orchestration/k8s
+cd infra.orchestration/k8s
 ./deploy-all.sh
 ```
+
 **5. Verificar e acessar**
 ```bash
-kubectl get pods -w
+kubectl get pods
 kubectl port-forward service/users-api-service 5001:80
 kubectl port-forward service/catalog-api-service 5002:80
 ```
