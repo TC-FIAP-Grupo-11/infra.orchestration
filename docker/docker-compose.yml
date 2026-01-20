@@ -43,8 +43,9 @@ services:
 
   # Users API
   users-api:
+    image: fcg-users-api:latest
     build:
-      context: .
+      context: ../..
       dockerfile: FCG.Api.Users/Dockerfile
       args:
         GITHUB_USERNAME: ${GITHUB_USERNAME}
@@ -79,8 +80,9 @@ services:
 
   # Catalog API
   catalog-api:
+    image: fcg-catalog-api:latest
     build:
-      context: .
+      context: ../..
       dockerfile: FCG.Api.Catalog/Dockerfile
       args:
         GITHUB_USERNAME: ${GITHUB_USERNAME}
@@ -110,8 +112,9 @@ services:
 
   # Payments API
   payments-api:
+    image: fcg-payments-api:latest
     build:
-      context: .
+      context: ../..
       dockerfile: FCG.Api.Payments/Dockerfile
       args:
         GITHUB_USERNAME: ${GITHUB_USERNAME}
@@ -133,8 +136,9 @@ services:
 
   # Notifications API
   notifications-api:
+    image: fcg-notifications-api:latest
     build:
-      context: .
+      context: ../..
       dockerfile: FCG.Api.Notifications/Dockerfile
       args:
         GITHUB_USERNAME: ${GITHUB_USERNAME}
