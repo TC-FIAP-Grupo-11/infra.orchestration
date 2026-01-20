@@ -21,10 +21,10 @@ echo ""
 
 # Remover microsserviços
 echo "📦 Removendo microsserviços..."
-kubectl delete -f ../../FCG.Api.Notifications/k8s/ --ignore-not-found=true
-kubectl delete -f ../../FCG.Api.Payments/k8s/ --ignore-not-found=true
-kubectl delete -f ../../FCG.Api.Catalog/k8s/ --ignore-not-found=true
-kubectl delete -f ../../FCG.Api.Users/k8s/ --ignore-not-found=true
+kubectl delete -f ../../api.notifications/k8s/ --ignore-not-found=true
+kubectl delete -f ../../api.payments/k8s/ --ignore-not-found=true
+kubectl delete -f ../../api.catalog/k8s/ --ignore-not-found=true
+kubectl delete -f ../../api.users/k8s/ --ignore-not-found=true
 
 echo ""
 echo "🏗️  Removendo infraestrutura..."

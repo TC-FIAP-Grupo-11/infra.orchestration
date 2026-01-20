@@ -41,28 +41,28 @@ echo ""
 # 2. Deploy Users API
 echo "👤 Step 2/5: Deploying Users API"
 echo "------------------------------------------------------------"
-kubectl apply -f ../../FCG.Api.Users/k8s/
+kubectl apply -f ../../api.users/k8s/
 echo ""
 sleep 10
 
 # 3. Deploy Catalog API
 echo "🎮 Step 3/5: Deploying Catalog API"
 echo "------------------------------------------------------------"
-kubectl apply -f ../../FCG.Api.Catalog/k8s/
+kubectl apply -f ../../api.catalog/k8s/
 echo ""
 sleep 10
 
 # 4. Deploy Payments API
 echo "💳 Step 4/5: Deploying Payments API"
 echo "------------------------------------------------------------"
-kubectl apply -f ../../FCG.Api.Payments/k8s/
+kubectl apply -f ../../api.payments/k8s/
 echo ""
 sleep 10
 
 # 5. Deploy Notifications API
 echo "📧 Step 5/5: Deploying Notifications API"
 echo "------------------------------------------------------------"
-kubectl apply -f ../../FCG.Api.Notifications/k8s/
+kubectl apply -f ../../api.notifications/k8s/
 echo ""
 
 echo "========================================"
