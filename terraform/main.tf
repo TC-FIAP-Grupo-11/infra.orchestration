@@ -46,4 +46,5 @@ module "k8s_secrets" {
   cognito_client_secret = module.cognito.client_secret
   admin_email           = var.admin_email
   admin_password        = var.admin_password
+  new_relic_license_key = var.new_relic_license_key
 }

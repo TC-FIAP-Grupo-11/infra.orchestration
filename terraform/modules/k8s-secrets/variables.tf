@@ -28,3 +28,8 @@ variable "admin_password" {
   type      = string
   sensitive = true
 }
+
+variable "new_relic_license_key" {
+  type      = string
+  sensitive = true
+}

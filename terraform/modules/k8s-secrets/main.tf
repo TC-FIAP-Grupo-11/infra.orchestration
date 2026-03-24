@@ -4,6 +4,17 @@ locals {
 
 # Pods usam IMDS (LabRole do node group) para credenciais AWS — sem env vars estáticas
 
+resource "kubernetes_secret" "newrelic" {
+  metadata {
+    name      = "newrelic-secret"
+    namespace = "default"
+  }
+
+  data = {
+    NEW_RELIC_LICENSE_KEY = var.new_relic_license_key
+  }
+}
+
 resource "kubernetes_secret" "sqlserver" {
   metadata {
     name      = "sqlserver-secret"
