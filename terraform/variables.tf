@@ -13,6 +13,7 @@ variable "cluster_name" {
 variable "admin_email" {
   description = "Admin user email for seeding"
   type        = string
+  default = "admin@fcg.com"
 }
 
 variable "admin_password" {

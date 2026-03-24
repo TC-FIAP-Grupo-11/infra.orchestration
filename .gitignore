@@ -2,6 +2,9 @@
 .env
 docker/.env
 
+# Terraform secrets
+terraform/terraform.tfvars
+
 # Kubernetes secrets (os arquivos reais, não os .example)
 ../FCG.Api.Users/k8s/secret.yaml
 ../FCG.Api.Catalog/k8s/secret.yaml
