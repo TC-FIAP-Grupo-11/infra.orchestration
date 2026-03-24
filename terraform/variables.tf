@@ -10,4 +10,14 @@ variable "cluster_name" {
   default     = "fcg-cluster"
 }
 
+variable "admin_email" {
+  description = "Admin user email for seeding"
+  type        = string
+}
+
+variable "admin_password" {
+  description = "Admin user password for seeding"
+  type        = string
+  sensitive   = true
+}
 

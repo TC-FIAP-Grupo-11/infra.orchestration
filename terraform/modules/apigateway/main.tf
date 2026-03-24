@@ -82,6 +82,11 @@ resource "aws_apigatewayv2_integration" "services" {
   connection_type    = "VPC_LINK"
   connection_id      = aws_apigatewayv2_vpc_link.fcg.id
   integration_method = "ANY"
+
+  # Strip o prefixo do serviço: /users/health → /health
+  request_parameters = {
+    "overwrite:path" = "/$request.path.proxy"
+  }
 }
 
 # Uma route por serviço — autenticação delegada aos microsserviços
