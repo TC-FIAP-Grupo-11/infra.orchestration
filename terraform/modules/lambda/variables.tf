@@ -1,9 +1,1 @@
-variable "payment_image_uri" {
-  description = "ECR image URI for the Payment Lambda"
-  type        = string
-}
-
-variable "notification_image_uri" {
-  description = "ECR image URI for the Notification Lambda"
-  type        = string
-}
+# Sem variáveis — account ID e region são descobertos via data sources
