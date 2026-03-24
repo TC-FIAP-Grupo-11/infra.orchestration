@@ -271,7 +271,3 @@ Lambdas (ECR image):
 Cognito: User Pool gerenciado pelo Terraform
 Secrets K8s: gerenciados pelo Terraform (senha SA gerada via random_password)
 ```
-
----
-
-**Grupo 11 - FIAP 2026**
