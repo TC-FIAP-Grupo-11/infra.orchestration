@@ -107,4 +107,69 @@ kubectl logs -l app=users-api # Ver logs
 
 ---
 
+## ☁️ Deploy na AWS (Fase 3)
+
+### Pré-requisitos
+- AWS CLI configurado (`aws configure`)
+- `kubectl` com kubeconfig apontando para o cluster EKS
+- Terraform >= 1.5
+
+### Ordem de deploy
+
+**1. Provisionar infraestrutura base (EKS + ECR)**
+```bash
+cd terraform
+terraform init
+terraform apply -target=module.ecr -target=module.eks
+```
+
+**2. Subir imagens no ECR**
+
+Os pipelines CD fazem isso automaticamente a cada push na `main` de cada repositório. Basta garantir que os secrets `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` estejam configurados em cada repo GitHub.
+
+**3. Deploy dos microsserviços no EKS**
+```bash
+cd k8s
+./deploy-all.sh
+```
+
+> Após o `kubectl apply` dos Services, o AWS Load Balancer Controller cria automaticamente um NLB interno por serviço e os taggeia com `kubernetes.io/service-name`. Aguarde 2-3 minutos para os NLBs ficarem ativos.
+
+**4. Provisionar API Gateway e Lambdas**
+```bash
+cd terraform
+terraform apply
+```
+
+> O módulo `apigateway` usa `data "aws_lb"` para descobrir os ARNs dos NLBs automaticamente pelas tags — não é necessário informar ARNs manualmente.
+
+**5. Validar pods**
+```bash
+kubectl get pods
+kubectl get services
+```
+
+**6. Teardown após o vídeo**
+```bash
+cd k8s && ./cleanup-all.sh
+cd ../terraform && terraform destroy
+```
+
+### Arquitetura Cloud (Fase 3)
+```
+Internet → AWS API Gateway (HTTP API)
+            └── JWT Authorizer (Cognito)
+            └── VPC Link → NLB interno → EKS
+                  ├── FCG.Api.Users      (invoca Lambda.Notification)
+                  ├── FCG.Api.Catalog    (publica OrderPlacedEvent)
+                  ├── FCG.Api.Payments   (consome OrderPlacedEvent, invoca Lambda.Notification)
+                  └── FCG.Api.Notifications (deprecado)
+
+Lambdas (ECR image):
+  ├── FCG.Lambda.Payment      (fcg-payment-processor)
+  └── FCG.Lambda.Notification (fcg-notification-sender)
+```
+
+---
+
 **Grupo 11 - FIAP 2026**
