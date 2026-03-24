@@ -240,7 +240,7 @@ for id in $(aws ec2 describe-instances \
     --http-tokens optional
 done
 ```
-Este comando deve ser executado após provisionar o node group (passo 1 do deploy).
+Este comando deve ser executado após provisionar o node group (passo 1 do deploy) e **repetido sempre que a sessão do AWS Academy expirar**, pois os nodes podem ser recriados com hop limit = 1 novamente.
 
 ---
 
