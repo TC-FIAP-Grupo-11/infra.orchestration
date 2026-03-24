@@ -10,15 +10,4 @@ variable "cluster_name" {
   default     = "fcg-cluster"
 }
 
-variable "lambda_payment_image_uri" {
-  description = "ECR image URI for the Payment Lambda"
-  type        = string
-  default     = ""
-}
-
-variable "lambda_notification_image_uri" {
-  description = "ECR image URI for the Notification Lambda"
-  type        = string
-  default     = ""
-}
 

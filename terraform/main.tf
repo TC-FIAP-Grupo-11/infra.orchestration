@@ -10,9 +10,6 @@ module "eks" {
 
 module "lambda" {
   source = "./modules/lambda"
-
-  payment_image_uri      = var.lambda_payment_image_uri
-  notification_image_uri = var.lambda_notification_image_uri
 }
 
 module "apigateway" {
