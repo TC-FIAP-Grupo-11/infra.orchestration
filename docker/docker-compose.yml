@@ -41,6 +41,20 @@ services:
       retries: 5
       start_period: 20s
 
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: fcg-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - fcg-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Users API
   users-api:
     image: fcg-users-api:latest
@@ -92,12 +106,15 @@ services:
       - Messaging__RabbitMQ__Host=rabbitmq
       - Messaging__RabbitMQ__Username=guest
       - Messaging__RabbitMQ__Password=guest
+      - Redis__ConnectionString=redis:6379
     ports:
       - "5002:80"
     depends_on:
       sqlserver:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       users-api:
         condition: service_started
