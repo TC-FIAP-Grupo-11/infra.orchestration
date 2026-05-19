@@ -41,6 +41,23 @@ services:
       retries: 5
       start_period: 20s
 
+  # MongoDB
+  mongodb:
+    image: mongo:7
+    container_name: fcg-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - fcg-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   # Redis
   redis:
     image: redis:7-alpine
@@ -107,6 +124,8 @@ services:
       - Messaging__RabbitMQ__Username=guest
       - Messaging__RabbitMQ__Password=guest
       - Redis__ConnectionString=redis:6379
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=fcg_catalog
     ports:
       - "5002:80"
     depends_on:
@@ -115,6 +134,8 @@ services:
       rabbitmq:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
       users-api:
         condition: service_started
@@ -171,3 +192,4 @@ networks:
 volumes:
   sqlserver-data:
   rabbitmq-data:
+  mongodb-data:
