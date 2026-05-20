@@ -28,3 +28,20 @@ variable "new_relic_license_key" {
   sensitive   = true
 }
 
+variable "atlas_org_id" {
+  description = "MongoDB Atlas organization ID"
+  type        = string
+}
+
+variable "atlas_public_key" {
+  description = "MongoDB Atlas API public key"
+  type        = string
+  sensitive   = true
+}
+
+variable "atlas_private_key" {
+  description = "MongoDB Atlas API private key"
+  type        = string
+  sensitive   = true
+}
+

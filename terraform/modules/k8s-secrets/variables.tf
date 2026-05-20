@@ -33,3 +33,26 @@ variable "new_relic_license_key" {
   type      = string
   sensitive = true
 }
+
+variable "redis_connection_string" {
+  type      = string
+  sensitive = true
+}
+
+variable "mongodb_connection_string" {
+  type      = string
+  sensitive = true
+}
+
+variable "elasticsearch_url" {
+  type = string
+}
+
+variable "elasticsearch_username" {
+  type = string
+}
+
+variable "elasticsearch_password" {
+  type      = string
+  sensitive = true
+}

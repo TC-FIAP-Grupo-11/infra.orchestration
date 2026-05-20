@@ -36,15 +36,42 @@ module "cognito" {
   source = "./modules/cognito"
 }
 
+module "elasticache" {
+  source = "./modules/elasticache"
+
+  vpc_id                 = module.eks.vpc_id
+  private_subnet_ids     = module.eks.private_subnet_ids
+  node_security_group_id = module.eks.node_security_group_id
+}
+
+module "opensearch" {
+  source = "./modules/opensearch"
+
+  vpc_id                 = module.eks.vpc_id
+  private_subnet_ids     = module.eks.private_subnet_ids
+  node_security_group_id = module.eks.node_security_group_id
+}
+
+module "mongodb_atlas" {
+  source = "./modules/mongodb-atlas"
+
+  atlas_org_id = var.atlas_org_id
+}
+
 module "k8s_secrets" {
   source = "./modules/k8s-secrets"
 
-  sa_password           = random_password.sa.result
-  cognito_authority     = module.cognito.authority
-  cognito_user_pool_id  = module.cognito.user_pool_id
-  cognito_client_id     = module.cognito.client_id
-  cognito_client_secret = module.cognito.client_secret
-  admin_email           = var.admin_email
-  admin_password        = var.admin_password
-  new_relic_license_key = var.new_relic_license_key
+  sa_password              = random_password.sa.result
+  cognito_authority        = module.cognito.authority
+  cognito_user_pool_id     = module.cognito.user_pool_id
+  cognito_client_id        = module.cognito.client_id
+  cognito_client_secret    = module.cognito.client_secret
+  admin_email              = var.admin_email
+  admin_password           = var.admin_password
+  new_relic_license_key    = var.new_relic_license_key
+  redis_connection_string  = module.elasticache.connection_string
+  mongodb_connection_string = module.mongodb_atlas.connection_string
+  elasticsearch_url        = module.opensearch.endpoint
+  elasticsearch_username   = module.opensearch.username
+  elasticsearch_password   = module.opensearch.password
 }

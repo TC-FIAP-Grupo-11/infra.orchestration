@@ -14,6 +14,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    mongodbatlas = {
+      source  = "mongodb/mongodbatlas"
+      version = "~> 1.15"
+    }
   }
 
   backend "s3" {
@@ -27,6 +31,11 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+}
+
+provider "mongodbatlas" {
+  public_key  = var.atlas_public_key
+  private_key = var.atlas_private_key
 }
 
 # Requer que o cluster EKS já exista (aplique module.eks antes)
