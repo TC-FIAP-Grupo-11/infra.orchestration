@@ -18,10 +18,14 @@ terraform {
       source  = "mongodb/mongodbatlas"
       version = "~> 1.15"
     }
+    ec = {
+      source  = "elastic/ec"
+      version = "~> 0.10"
+    }
   }
 
+  # bucket passado via -backend-config no deploy.sh (nome inclui account ID para unicidade global)
   backend "s3" {
-    bucket         = "fcg-terraform-state"
     key            = "fcg/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
@@ -36,6 +40,10 @@ provider "aws" {
 provider "mongodbatlas" {
   public_key  = var.atlas_public_key
   private_key = var.atlas_private_key
+}
+
+provider "ec" {
+  apikey = var.elastic_cloud_api_key
 }
 
 # Requer que o cluster EKS já exista (aplique module.eks antes)

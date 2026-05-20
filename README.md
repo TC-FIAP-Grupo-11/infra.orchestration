@@ -7,27 +7,26 @@ Orquestração para executar a plataforma FIAP Cloud Games.
 
 ## 📋 Pré-requisitos
 
-Clone todos os repositórios no mesmo nível:
+Clone todos os repositórios dentro de um diretório raiz comum:
 
 ```bash
 mkdir fcg && cd fcg
 
-# Clone os repositórios
-git clone https://github.com/TC-FIAP-Grupo-11/api.users.git
-git clone https://github.com/TC-FIAP-Grupo-11/api.catalog.git
-git clone https://github.com/TC-FIAP-Grupo-11/api.payments.git
-git clone https://github.com/TC-FIAP-Grupo-11/api.notifications.git
-git clone https://github.com/TC-FIAP-Grupo-11/infra.orchestration.git
+git clone https://github.com/TC-FIAP-Grupo-11/api.users.git          FCG.Api.Users
+git clone https://github.com/TC-FIAP-Grupo-11/api.catalog.git         FCG.Api.Catalog
+git clone https://github.com/TC-FIAP-Grupo-11/api.payments.git        FCG.Api.Payments
+git clone https://github.com/TC-FIAP-Grupo-11/api.notifications.git   FCG.Api.Notifications
+git clone https://github.com/TC-FIAP-Grupo-11/infra.orchestration.git FCG.Infra.Orchestration
 ```
 
 **Estrutura esperada:**
 ```
 fcg/
-├── api.users/
-├── api.catalog/
-├── api.payments/
-├── api.notifications/
-└── infra.orchestration/
+├── FCG.Api.Users/
+├── FCG.Api.Catalog/
+├── FCG.Api.Payments/
+├── FCG.Api.Notifications/
+└── FCG.Infra.Orchestration/
 ```
 
 ---

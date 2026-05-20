@@ -9,8 +9,11 @@ PROFILE="${1:-fiapaws}"
 export AWS_PROFILE=$PROFILE
 
 REGION="us-east-1"
-BUCKET="fcg-terraform-state"
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+BUCKET="fcg-terraform-state-${ACCOUNT_ID}"
 TABLE="fcg-terraform-locks"
+
+echo "  Bucket: $BUCKET"
 
 # Bucket S3
 if aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null; then

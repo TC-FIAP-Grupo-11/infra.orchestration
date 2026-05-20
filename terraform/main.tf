@@ -44,12 +44,9 @@ module "elasticache" {
   node_security_group_id = module.eks.node_security_group_id
 }
 
-module "opensearch" {
-  source = "./modules/opensearch"
-
-  vpc_id                 = module.eks.vpc_id
-  private_subnet_ids     = module.eks.private_subnet_ids
-  node_security_group_id = module.eks.node_security_group_id
+module "elastic_cloud" {
+  source  = "./modules/elastic-cloud"
+  api_key = var.elastic_cloud_api_key
 }
 
 module "mongodb_atlas" {
@@ -71,8 +68,8 @@ module "k8s_secrets" {
   new_relic_license_key    = var.new_relic_license_key
   redis_connection_string   = module.elasticache.connection_string
   mongodb_connection_string = module.mongodb_atlas.connection_string
-  elasticsearch_url         = module.opensearch.endpoint
-  elasticsearch_username    = module.opensearch.username
-  elasticsearch_password    = module.opensearch.password
+  elasticsearch_url         = module.elastic_cloud.endpoint
+  elasticsearch_username    = module.elastic_cloud.username
+  elasticsearch_password    = module.elastic_cloud.password
   rabbitmq_password         = var.rabbitmq_password
 }

@@ -38,6 +38,7 @@ if ! aws sts get-caller-identity --output text > /dev/null 2>&1; then
 fi
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+BUCKET="fcg-terraform-state-${ACCOUNT_ID}"
 echo "  Conta AWS: $ACCOUNT_ID — OK"
 
 # ---------------------------------------------------------------------------
@@ -60,7 +61,8 @@ step "Bootstrap (bucket S3 + tabela DynamoDB para estado remoto)"
 ./bootstrap.sh "$PROFILE"
 
 step "terraform init"
-terraform init
+rm -f .terraform.lock.hcl
+terraform init -reconfigure -backend-config="bucket=${BUCKET}"
 
 # ---------------------------------------------------------------------------
 # Fase 1 — ECR, EKS, Cognito (sem provider kubernetes, sem imagens necessárias)
@@ -78,6 +80,15 @@ terraform apply \
 step "Configurando kubectl"
 aws eks update-kubeconfig --name "$CLUSTER" --region "$REGION"
 
+echo ""
+echo "  Contexto ativo:"
+kubectl config current-context
+echo ""
+echo "  Nodes do cluster:"
+kubectl get nodes
+echo ""
+pause "Confirme que o kubectl está apontando para o cluster correto"
+
 # ---------------------------------------------------------------------------
 # Ajuste de IMDS hop limit (limitação do AWS Academy)
 # Pods precisam de 2 saltos para acessar credenciais via IMDS
@@ -94,6 +105,9 @@ for id in $(aws ec2 describe-instances \
     --output text > /dev/null
   echo "  node $id ajustado"
 done
+
+echo ""
+pause "Confirme que todos os nodes foram ajustados corretamente"
 
 # ---------------------------------------------------------------------------
 # Pipelines CD — imagens no ECR

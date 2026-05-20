@@ -51,3 +51,9 @@ variable "atlas_private_key" {
   sensitive   = true
 }
 
+variable "elastic_cloud_api_key" {
+  description = "Elastic Cloud API key"
+  type        = string
+  sensitive   = true
+}
+
