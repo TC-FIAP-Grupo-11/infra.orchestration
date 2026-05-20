@@ -1,5 +1,6 @@
-# 🎮 FCG - Infrastructure Orchestration
+# FCG - Infrastructure Orchestration
 
+**Tech Challenge - Fase 4**  
 Orquestração para executar a plataforma FIAP Cloud Games.
 
 ---
@@ -54,6 +55,9 @@ docker compose up -d --build
 - Users API: `http://localhost:5001/swagger` | `/health`
 - Catalog API: `http://localhost:5002/swagger` | `/health`
 - RabbitMQ: `http://localhost:15672` (guest/guest)
+- MongoDB: `mongodb://localhost:27017`
+- Redis: `localhost:6379`
+- Elasticsearch: `http://localhost:9200`
 
 **Comandos:**
 ```bash
@@ -80,6 +84,8 @@ docker compose -f infra.orchestration/docker/docker-compose.yml build
 ```bash
 cp api.users/k8s/secret.yaml.example api.users/k8s/secret.yaml
 cp api.catalog/k8s/secret.yaml.example api.catalog/k8s/secret.yaml
+cp api.payments/k8s/secret.yaml.example api.payments/k8s/secret.yaml
+cp api.notifications/k8s/secret.yaml.example api.notifications/k8s/secret.yaml
 # Edite os arquivos com suas credenciais
 ```
 
@@ -107,7 +113,7 @@ kubectl logs -l app=users-api # Ver logs
 
 ---
 
-## ☁️ Deploy na AWS (Fase 3)
+## ☁️ Deploy na AWS (Fase 4)
 
 ### Pré-requisitos
 - AWS CLI configurado com perfil Academy (`aws configure --profile fiapaws`)
@@ -148,13 +154,21 @@ cd k8s
 
 > Após o `kubectl apply` dos Services, o AWS Load Balancer Controller cria automaticamente um NLB interno por serviço. Aguarde 2-3 minutos para os NLBs ficarem ativos.
 
-**5. Provisionar Cognito, secrets K8s, API Gateway e Lambdas**
+**5. Provisionar Cognito, serviços gerenciados (Redis, MongoDB, Elasticsearch) e secrets K8s**
 ```bash
 cd terraform
+terraform init   # necessário na primeira vez ou após adicionar providers
 terraform apply
 ```
 
-> Este passo cria o Cognito User Pool, gera automaticamente a senha do SQL Server via `random_password`, e cria os secrets K8s (`sqlserver-secret`, `users-api-secret`, `catalog-api-secret`) via provider Kubernetes. Requer que o EKS já exista.
+> Este passo cria:
+> - Cognito User Pool
+> - ElastiCache Redis (`cache.t3.micro`)
+> - MongoDB Atlas M0 (free tier) — requer `atlas_org_id`, `atlas_public_key`, `atlas_private_key` no `terraform.tfvars`
+> - Amazon OpenSearch (`t3.small.search`)
+> - Secrets K8s para todos os serviços (`users-api-secret`, `catalog-api-secret`, `payments-api-secret`, `notifications-api-secret`)
+>
+> Requer que o EKS já exista. O OpenSearch leva ~15 min para ficar disponível.
 
 > Se os secrets já existirem no cluster (de um deploy anterior), delete-os antes:
 > ```bash
@@ -255,19 +269,24 @@ Este comando deve ser executado após provisionar o node group (passo 1 do deplo
 kubectl set image deployment/<nome> <container>=<account-id>.dkr.ecr.us-east-1.amazonaws.com/<repo>:latest
 ```
 
-### Arquitetura Cloud (Fase 3)
+### Arquitetura Cloud (Fase 4)
 ```
 Internet → AWS API Gateway (HTTP API)
             └── VPC Link → NLB interno → EKS
-                  ├── FCG.Api.Users      (autenticação via Cognito)
-                  ├── FCG.Api.Catalog    (publica OrderPlacedEvent)
+                  ├── FCG.Api.Users      (auth via Cognito)
+                  ├── FCG.Api.Catalog    (cache Redis, reviews MongoDB, busca OpenSearch)
                   ├── FCG.Api.Payments   (consome OrderPlacedEvent)
                   └── FCG.Api.Notifications
+
+Serviços gerenciados (Terraform):
+  ├── ElastiCache Redis       — cache de listagens do CatalogAPI
+  ├── MongoDB Atlas M0        — avaliações de jogos (GameReviews)
+  ├── Amazon OpenSearch       — índice de busca fuzzy de jogos
+  └── AWS Cognito             — autenticação JWT
 
 Lambdas (ECR image):
   ├── FCG.Lambda.Payment      (fcg-payment-processor)
   └── FCG.Lambda.Notification (fcg-notification-sender)
 
-Cognito: User Pool gerenciado pelo Terraform
-Secrets K8s: gerenciados pelo Terraform (senha SA gerada via random_password)
+Secrets K8s: todos gerenciados pelo Terraform (nenhuma credencial em arquivos versionados)
 ```
