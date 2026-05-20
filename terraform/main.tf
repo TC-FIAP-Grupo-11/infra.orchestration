@@ -69,9 +69,10 @@ module "k8s_secrets" {
   admin_email              = var.admin_email
   admin_password           = var.admin_password
   new_relic_license_key    = var.new_relic_license_key
-  redis_connection_string  = module.elasticache.connection_string
+  redis_connection_string   = module.elasticache.connection_string
   mongodb_connection_string = module.mongodb_atlas.connection_string
-  elasticsearch_url        = module.opensearch.endpoint
-  elasticsearch_username   = module.opensearch.username
-  elasticsearch_password   = module.opensearch.password
+  elasticsearch_url         = module.opensearch.endpoint
+  elasticsearch_username    = module.opensearch.username
+  elasticsearch_password    = module.opensearch.password
+  rabbitmq_password         = var.rabbitmq_password
 }

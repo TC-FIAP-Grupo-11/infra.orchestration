@@ -28,6 +28,12 @@ variable "new_relic_license_key" {
   sensitive   = true
 }
 
+variable "rabbitmq_password" {
+  description = "RabbitMQ password injected into all service secrets"
+  type        = string
+  sensitive   = true
+}
+
 variable "atlas_org_id" {
   description = "MongoDB Atlas organization ID"
   type        = string
