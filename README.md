@@ -119,78 +119,40 @@ kubectl logs -l app=users-api # Ver logs
 - AWS CLI configurado com perfil Academy (`aws configure --profile fiapaws`)
 - `kubectl` instalado
 - Terraform >= 1.5
+- Secrets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e `AWS_SESSION_TOKEN` configurados na organização GitHub
+- `terraform/terraform.tfvars` criado com as variáveis obrigatórias
 
-> **AWS Academy:** as credenciais expiram a cada ~4h. Antes de qualquer comando AWS/Terraform/kubectl, exporte o perfil atualizado:
-> ```bash
-> export AWS_PROFILE=fiapaws
-> ```
+> **AWS Academy:** as credenciais expiram a cada ~4h. Atualize o perfil `fiapaws` com as credenciais do painel Academy antes de executar qualquer comando.
 
-### Ordem de deploy
+### Deploy automatizado
 
-**1. Provisionar infraestrutura base (EKS + ECR)**
+O script `terraform/deploy.sh` orquestra todo o processo:
+
 ```bash
 cd terraform
-./bootstrap.sh fiapaws   # cria bucket S3 + tabela DynamoDB (apenas na primeira vez)
-terraform init
-terraform apply -target=module.ecr -target=module.eks
+./deploy.sh fiapaws
 ```
 
-**2. Configurar kubectl**
-```bash
-aws eks update-kubeconfig --name fcg-cluster --region us-east-1
-```
+O script executa automaticamente:
+1. Valida credenciais AWS e pré-requisitos
+2. Bootstrap (bucket S3 + tabela DynamoDB para estado remoto)
+3. **Fase 1** — ECR, EKS, Cognito
+4. Configura `kubectl` + ajusta IMDS hop limit nos nodes
+5. Pausa para aguardar pipelines CD subirem imagens no ECR (6 repos)
+6. Deploy dos microsserviços no EKS (`./deploy-all.sh`)
+7. Aguarda NLBs ficarem ativos (~3 min)
+8. **Fase 2** — Lambda, ElastiCache, OpenSearch, MongoDB Atlas, K8s Secrets, API Gateway
 
-**3. Subir imagens no ECR**
+> O OpenSearch leva ~15 min para ficar disponível após o apply da Fase 2.
 
-Os pipelines CD fazem isso automaticamente a cada push na `main`. Os secrets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e `AWS_SESSION_TOKEN` devem estar configurados na organização GitHub.
-
-> Aguarde os pipelines concluírem antes de prosseguir.
-
-**4. Deploy dos microsserviços no EKS**
-```bash
-cd k8s
-./deploy-all.sh
-```
-
-> Após o `kubectl apply` dos Services, o AWS Load Balancer Controller cria automaticamente um NLB interno por serviço. Aguarde 2-3 minutos para os NLBs ficarem ativos.
-
-**5. Provisionar Cognito, serviços gerenciados (Redis, MongoDB, Elasticsearch) e secrets K8s**
-```bash
-cd terraform
-terraform init   # necessário na primeira vez ou após adicionar providers
-terraform apply
-```
-
-> Este passo cria:
-> - Cognito User Pool
-> - ElastiCache Redis (`cache.t3.micro`)
-> - MongoDB Atlas M0 (free tier) — requer `atlas_org_id`, `atlas_public_key`, `atlas_private_key` no `terraform.tfvars`
-> - Amazon OpenSearch (`t3.small.search`)
-> - Secrets K8s para todos os serviços (`users-api-secret`, `catalog-api-secret`, `payments-api-secret`, `notifications-api-secret`)
->
-> Requer que o EKS já exista. O OpenSearch leva ~15 min para ficar disponível.
-
-> Se os secrets já existirem no cluster (de um deploy anterior), delete-os antes:
-> ```bash
-> kubectl delete secret sqlserver-secret users-api-secret catalog-api-secret --ignore-not-found
-> ```
-
-**6. Aplicar deployments atualizados**
-
-Após qualquer alteração nos arquivos de deployment das APIs, aplique-os individualmente. Note que `kubectl apply` reseta a imagem para o placeholder do YAML — rode o pipeline CD novamente (ou `kubectl set image`) para restaurar a URI ECR completa:
-
-```bash
-kubectl apply -f ../../FCG.Api.Users/k8s/deployment.yaml
-kubectl set image deployment/users-api users-api=<account-id>.dkr.ecr.us-east-1.amazonaws.com/fcg-users-api:latest
-```
-
-**7. Validar pods**
+**Validar após o deploy:**
 ```bash
 kubectl get pods
 kubectl get services
+terraform output api_gateway_endpoint
 ```
 
-**8. Teardown após o vídeo**
+**Teardown após o vídeo:**
 ```bash
 cd k8s && ./cleanup-all.sh
 cd ../terraform && terraform destroy
